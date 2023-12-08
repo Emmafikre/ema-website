@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English free transcription</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #3498db, #2c3e50); /* Updated background gradient */
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            color: #ecf0f1; /* Header text color */
+        }
+
+        p {
+            margin-bottom: 10px;
+            color: #bdc3c7; /* Paragraph text color */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #2ecc71; /* Button background color */
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease; /* Smooth transition */
+        }
+
+        button:hover {
+            background-color: #27ae60; /* Darker color on hover */
+        }
+
+        #transcriptionOutput {
+            margin-top: 20px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            background-color: #fff;
+            color: #333;
+            border-radius: 5px;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        #fileInputLabel {
+            padding: 10px 20px;
+            background-color: #e74c3c; /* Red color for contrast */
+            color: #fff;
+            cursor: pointer;
+            margin-top: 20px;
+            display: inline-block;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #fileInputLabel:hover {
+            background-color: #c0392b; /* Darker red on hover */
+        }
+
+        #endtxt {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #406e83;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Emma Transcribe Free</h1>
+        <p>Welcome to Emma Transcribe Free, your go-to platform for transcription services. Easily transcribe both voice and video files with just a few clicks.</p>
+        <p>About Us: Emma Transcribe Free is committed to providing efficient and reliable transcription services for your convenience.</p>
+        <p>Contact us at: <br>Email: emmafikre@gmail.com <br>Phone: +251967724289</p>
+        <button id="startButton">Start Transcription</button>
+        <label id="fileInputLabel" for="fileInput">Upload Voice/Video File</label>
+        <input type="file" id="fileInput" accept="audio/*,video/*">
+        <div id="transcriptionOutput"></div>
+        <div id="endtxt"> Enjoy by using transcription for free</div>
+    </div>
+
+
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+          const startButton = document.getElementById('startButton');
+          const transcriptionOutput = document.getElementById('transcriptionOutput');
+          const fileInput = document.getElementById('fileInput');
+
+          const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+          recognition.lang = 'en-US';
+          recognition.interimResults = true;
+
+          let transcription = '';
+
+          recognition.onresult = (event) => {
+              const interimTranscript = event.results[event.resultIndex][0].transcript;
+              transcription = interimTranscript;
+              transcriptionOutput.textContent = transcription;
+          };
+
+          recognition.onend = () => {
+              startButton.textContent = 'Start Transcription';
+          };
+
+          startButton.addEventListener('click', () => {
+              if (startButton.textContent === 'Start Transcription') {
+                  recognition.start();
+                  startButton.textContent = 'Stop Transcription';
+              } else {
+                  recognition.stop();
+                  startButton.textContent = 'Start Transcription';
+              }
+          });
+
+          fileInput.addEventListener('change', (event) => {
+              const file = event.target.files[0];
+              if (file) {
+                  const reader = new FileReader();
+                  reader.onload = function (e) {
+                      const audioData = e.target.result;
+                      recognition.stop();
+                      startButton.textContent = 'Start Transcription';
+                      transcriptionOutput.textContent = '';
+                      transcribeFile(audioData);
+                  };
+                  reader.readAsArrayBuffer(file);
+              }
+          });
+
+          function transcribeFile(audioData) {
+              const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+              audioContext.decodeAudioData(audioData, (buffer) => {
+                  const source = audioContext.createBufferSource();
+                  source.buffer = buffer;
+                  source.connect(recognition.context.destination);
+                  recognition.onresult = (event) => {
+                      const interimTranscript = event.results[event.resultIndex][0].transcript;
+                      transcription = interimTranscript;
+                      transcriptionOutput.textContent = transcription;
+                  };
+                  source.start();
+                  recognition.start();
+                  startButton.disabled = true;
+              });
+          }
+      });
+  </script>
+</body>
+</html>
